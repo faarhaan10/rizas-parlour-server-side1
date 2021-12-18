@@ -125,8 +125,12 @@ async function run() {
             res.send(result);
         });
 
-
-
+        //post users
+        app.post('/users', async (req, res) => {
+            const doc = req.body;
+            const result = await userCollection.insertOne(doc);
+            res.send(result);
+        });
         //get users
         app.get('/users', async (req, res) => {
             const email = req.query.email;
