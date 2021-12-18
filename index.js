@@ -25,6 +25,7 @@ async function run() {
         const serviceCollection = database.collection("services");
         const reviewCollection = database.collection("reviews");
         const appointmentCollection = database.collection("appointments");
+        const userCollection = database.collection("users");
 
         // insert data api 
         app.post('/services', async (req, res) => {
@@ -126,6 +127,36 @@ async function run() {
 
 
 
+        //get users
+        app.get('/users', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email };
+            const user = await userCollection.findOne(query);
+            let isAdmin = false;
+            if (user?.role === 'admin') {
+                isAdmin = true;
+            }
+            res.json({ admin: isAdmin });
+        });
+
+        //update users
+        app.put('/users', async (req, res) => {
+            const doc = req.body;
+            const filter = { email: doc.email };
+            const options = { upsert: true };
+            const updateDoc = { $set: doc };
+            const result = await userCollection.updateOne(filter, updateDoc, options);
+            res.send(result);
+        });
+
+        //update users as admin
+        app.put('/users/admin', async (req, res) => {
+            const doc = req.body;
+            const filter = { email: doc.email };
+            const updateDoc = { $set: { role: 'admin' } };
+            const result = await userCollection.updateOne(filter, updateDoc);
+            res.send(result);
+        });
 
     }
     finally {
