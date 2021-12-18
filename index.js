@@ -10,10 +10,26 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+
+//mongodb connection tools
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.y4qnm.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
+
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+
+
 async function run() {
     try {
         await client.connect();
+        // db collections
+        const database = client.db("rizasParlour");
+        const serviceCollection = database.collection("services");
 
+        // insert data api 
+        app.post('/services', async (req, res) => {
+            const service = req.body;
+            const result = await serviceCollection.insertOne(service);
+            res.send(result);
+        })
     }
     finally {
         // await client.close();
