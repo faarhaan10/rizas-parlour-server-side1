@@ -24,6 +24,7 @@ async function run() {
         const database = client.db("rizasParlour");
         const serviceCollection = database.collection("services");
         const reviewCollection = database.collection("reviews");
+        const appointmentCollection = database.collection("appointments");
 
         // insert data api 
         app.post('/services', async (req, res) => {
@@ -76,6 +77,56 @@ async function run() {
             const result = await cursor.toArray();
             res.send(result);
         });
+
+
+
+
+        // insert appointments api 
+        app.post('/appointments', async (req, res) => {
+            const appointment = req.body;
+            const result = await appointmentCollection.insertOne(appointment);
+            res.send(result);
+        })
+
+        // get all appointments data api 
+        app.get('/appointments', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email };
+
+            let result;
+            if (email) {
+                const cursor = appointmentCollection.find(query).sort({ "_id": -1 });
+                result = await cursor.toArray();
+            }
+            else {
+                const cursor = appointmentCollection.find({}).sort({ "_id": -1 });
+                result = await cursor.toArray();
+            }
+            res.send(result);
+        });
+
+        //cancel appointments
+        app.delete('/appointments/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await appointmentCollection.deleteOne(query);
+            res.send(result);
+        });
+
+        //update customer appointment status
+        app.put('/appointments/:id', async (req, res) => {
+            const id = req.params.id;
+            const doc = req.body;
+            const query = { _id: ObjectId(id) };
+            const updateDoc = { $set: doc };
+            const options = { upsert: true };
+            const result = await appointmentCollection.updateOne(query, updateDoc, options);
+            res.send(result);
+        });
+
+
+
+
     }
     finally {
         // await client.close();
